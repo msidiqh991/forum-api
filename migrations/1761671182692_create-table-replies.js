@@ -18,13 +18,13 @@ exports.up = (pgm) => {
       references: "users(id)",
       onDelete: "CASCADE",
     },
-    comment_id: {
+    commentId: {
       type: "VARCHAR(50)",
       notNull: true,
       references: "comments(id)",
       onDelete: "CASCADE",
     },
-    is_delete: {
+    is_deleted: {
       type: "BOOLEAN",
       default: false,
       notNull: true,

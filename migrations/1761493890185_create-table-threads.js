@@ -24,7 +24,7 @@ exports.up = (pgm) => {
     },
     date: {
       type: 'TEXT',
-      notNull: true,
+      notNull: false,
     },
   });
 };
