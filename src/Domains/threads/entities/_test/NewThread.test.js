@@ -13,6 +13,7 @@ describe('NewThread entities', () => {
         const payload = {
             title: 123,
             body: true,
+            owner: null,
         }
         
         expect(() => new NewThread(payload)).toThrowError('NEW_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION');
@@ -22,11 +23,13 @@ describe('NewThread entities', () => {
         const payload = {
             title: 'Thread Title',
             body: 'Thread Body',
+            owner: 'user-123',
         }
 
         const newThread = new NewThread(payload);
 
         expect(newThread.title).toEqual(payload.title);
         expect(newThread.body).toEqual(payload.body);
+        expect(newThread.owner).toEqual(payload.owner);
     })
 })
