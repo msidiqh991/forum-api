@@ -16,6 +16,7 @@ describe('AddCommentUseCase', () => {
         const mockAddedComment = new AddComment({
             id: 'comment-123',
             content: useCasePayload.content,
+            owner: 'user-123',
         });
         
         const mockCommentRepository = new CommentRepository();

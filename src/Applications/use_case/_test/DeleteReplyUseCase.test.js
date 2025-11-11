@@ -1,3 +1,5 @@
+const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
 const DeleteReplyUseCase = require('../DeleteReplyUseCase');
 
@@ -33,13 +35,24 @@ describe('DeleteReplyUseCase', () => {
             replyId: 'reply-123',
         };
 
+        const mockThreadRepository = new ThreadRepository();
+        const mockCommentRepository = new CommentRepository();
         const mockReplyRepository = new ReplyRepository();
+
+        mockThreadRepository.verifyThreadAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
+        mockCommentRepository.verifyCommentAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
         mockReplyRepository.verifyReplyAvailability = jest.fn()
+            .mockImplementation(() => Promise.resolve());
+        mockReplyRepository.verifyReplyOwner = jest.fn()
             .mockImplementation(() => Promise.resolve());
         mockReplyRepository.deleteReply = jest.fn()
             .mockImplementation(() => Promise.resolve());
             
         const deleteReplyUseCase = new DeleteReplyUseCase({
+            threadRepository: mockThreadRepository,
+            commentRepository: mockCommentRepository,
             replyRepository: mockReplyRepository,
         });
 
@@ -49,6 +62,8 @@ describe('DeleteReplyUseCase', () => {
         // Assert
         expect(mockReplyRepository.verifyReplyAvailability)
             .toHaveBeenCalledWith(useCasePayload.replyId);
+        expect(mockReplyRepository.verifyReplyOwner)
+            .toHaveBeenCalledWith(useCasePayload.replyId, useCasePayload.owner);
         expect(mockReplyRepository.deleteReply)
             .toHaveBeenCalledWith(useCasePayload.replyId);
     });

@@ -44,6 +44,7 @@ describe('AddReplyUseCase', () => {
         expect(addedReply).toStrictEqual(new AddedReply({
             id: 'reply-123',
             content: useCasePayload.content,
+            owner: 'user-123',
         }));
         expect(mockThreadRepository.verifyThreadAvailability).toHaveBeenCalledWith('thread-123');
         expect(mockCommentRepository.verifyCommentAvailability).toHaveBeenCalledWith('comment-123');
