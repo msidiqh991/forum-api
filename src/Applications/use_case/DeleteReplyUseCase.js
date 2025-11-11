@@ -7,6 +7,7 @@ class DeleteReplyUseCase {
         this._validatePayload(useCasePayload);
         const { replyId } = useCasePayload;
         await this._replyRepository.verifyReplyAvailability(replyId);
+        await this._replyRepository.verifyReplyOwner(replyId, useCasePayload.owner);
         await this._replyRepository.deleteReply(replyId);
     }
 
