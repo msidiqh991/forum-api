@@ -6,7 +6,6 @@ class AddThreadUseCase {
     }
 
     async execute(useCasePayload, owner) {
-        await this._threadRepository.verifyThreadAvailability(owner);
         const newThread = new NewThread ({
             title: useCasePayload.title,
             body: useCasePayload.body,
