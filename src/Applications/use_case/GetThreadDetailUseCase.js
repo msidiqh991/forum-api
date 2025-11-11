@@ -1,4 +1,4 @@
-const AddedThread = require("../../Domains/threads/entities/AddedThread");
+const GetDetailThread = require("../../Domains/threads/entities/GetDetailThread");
 
 class GetThreadDetailUseCase {
     constructor({ threadRepository }) {
@@ -8,7 +8,7 @@ class GetThreadDetailUseCase {
     async execute(threadId) {
         await this._threadRepository.verifyThreadAvailability(threadId);
         const thread = await this._threadRepository.getThreadById(threadId);
-        return new AddedThread(thread);
+        return new GetDetailThread(thread);
     }
 }
 
