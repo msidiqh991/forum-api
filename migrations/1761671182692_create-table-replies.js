@@ -18,7 +18,7 @@ exports.up = (pgm) => {
       references: "users(id)",
       onDelete: "CASCADE",
     },
-    commentId: {
+    comment_id: {
       type: "VARCHAR(50)",
       notNull: true,
       references: "comments(id)",
