@@ -16,8 +16,6 @@ class AddCommentUseCase {
         }); 
 
         const addedComment = await this._commentRepository.addComment(newComment);
-        await this._commentRepository.verifyCommentAvailability(addedComment.id);
-
         return new AddedComment({
             id: addedComment.id,
             content: addedComment.content,
