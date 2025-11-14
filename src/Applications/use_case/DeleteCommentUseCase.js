@@ -1,3 +1,6 @@
+const NotFoundError = require("../../Commons/exceptions/NotFoundError");
+const AuthorizationError = require("../../Commons/exceptions/AuthorizationError");
+
 class DeleteCommentUseCase {
   constructor({ commentRepository }) {
     this._commentRepository = commentRepository;
@@ -5,14 +8,21 @@ class DeleteCommentUseCase {
 
   async execute(useCasePayload) {
     this._validatePayload(useCasePayload);
-    const { commentId } = useCasePayload;
+
+    const { commentId, owner } = useCasePayload;
+
     await this._commentRepository.verifyCommentAvailability(commentId);
-    await this._commentRepository.verifyCommentOwner(commentId, useCasePayload.owner);
-    await this._commentRepository.deleteComment(commentId);
+    await this._commentRepository.verifyCommentOwner(commentId, owner);
+
+    const deletedCount = await this._commentRepository.deleteComment(commentId);
+    if (deletedCount === 0) {
+      throw new NotFoundError("comment tidak ditemukan");
+    }
   }
 
   _validatePayload(payload) {
     const { commentId } = payload;
+
     if (!commentId) {
       throw new Error("DELETE_COMMENT_USE_CASE.NOT_CONTAIN_COMMENT_ID");
     }
