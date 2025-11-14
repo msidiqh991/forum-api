@@ -58,6 +58,23 @@ describe("CommentRepositoryPostgres", () => {
         commentRepositoryPostgres.verifyCommentAvailability("comment-123")
       ).resolves.not.toThrowError(NotFoundError);
     });
+
+    it("should return all comments by thread id correctly", async () => {
+      await CommentTableTestHelper.addComment({
+        id: 'comment-123',
+        threadId: 'thread-123',
+        content: 'a comment',
+        owner: 'user-123',
+      });
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      const comments = await commentRepositoryPostgres.getCommentsByThreadId("thread-123");
+
+      // Assert
+      expect(comments).toHaveLength(1);
+      expect(comments[0].content).toEqual('a comment');
+      expect(comments[0].username).toEqual('dicoding');
+    })
   });
 
   describe("Add comment function", () => {
@@ -133,26 +150,25 @@ describe("CommentRepositoryPostgres", () => {
   });
 
   describe("Verify comment owner", () => {
-    it("should throw NotFoundError when comment not available", async () => {
-      // Arrange
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {})
-
-      // Action & Assert
-      await expect(
-        commentRepositoryPostgres.verifyCommentOwner("comment-123", "user-123")
-      ).rejects.toThrowError(NotFoundError);
-
-    })
-
     it("should throw AuthorizationError when comment owner is different with user", async () => {
-      // Arrange
+    // Arrange
       await CommentTableTestHelper.addComment({ id: "comment-123", owner: "user-123" });
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {})
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action & Assert
       await expect(
         commentRepositoryPostgres.verifyCommentOwner("comment-123", "user-456")
       ).rejects.toThrowError(AuthorizationError);
+    });
+
+    it('should throw NotFoundError when comment does not exist', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      
+      // Action & Assert
+      await expect(
+        commentRepositoryPostgres.verifyCommentOwner('comment-999', 'user-123')
+      ).rejects.toThrowError(NotFoundError);
     })
   })
   
@@ -170,14 +186,63 @@ describe("CommentRepositoryPostgres", () => {
       // Action & Assert
       await expect(
         commentRepositoryPostgres.deleteComment(invalidComment.id)
-      ).rejects.toThrowError(NotFoundError);
+      ).resolves.toBe(0);
     });
 
     it("should throw NotFoundError when add comment failed", async () => {
         // Arrange
         const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
-        await expect(commentRepositoryPostgres.deleteComment('comment-123')).rejects.toThrowError(NotFoundError);
+        await expect(commentRepositoryPostgres.deleteComment('comment-123'))
+          .resolves
+          .toBe(0);
     });
   });
+
+  describe("getCommentsByThreadId function", () => {
+    it('should return comments by thread id correctly', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      await CommentTableTestHelper.addComment({
+        id: 'comment-123',
+        content: 'This is a comment',
+        threadId: 'thread-123',
+        owner: 'user-123',
+        username: 'dicoding',
+        date: '2024-01-01T00:00:00.000Z',
+      });
+      await CommentTableTestHelper.addComment({
+        id: 'comment-124',
+        content: 'This is another comment',
+        threadId: 'thread-123',
+        owner: 'user-123',
+        username: 'dicoding',
+        date: '2024-01-02T00:00:00.000Z',
+      });
+
+      // Action
+      const comments = await commentRepositoryPostgres.getCommentsByThreadId('thread-123');
+
+      // Assert
+      expect(comments).toHaveLength(2);
+      expect(comments).toStrictEqual([
+        {
+          id: 'comment-123',
+          content: 'This is a comment',
+          owner: 'user-123',
+          username: 'dicoding',
+          date: '2024-01-01T00:00:00.000Z',
+          is_deleted: false,
+        },
+        {
+          id: 'comment-124',
+          content: 'This is another comment',
+          owner: 'user-123',
+          username: 'dicoding',
+          date: '2024-01-02T00:00:00.000Z',
+          is_deleted: false,
+        },
+      ]);
+    })
+  })
 });
