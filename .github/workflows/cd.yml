@@ -13,6 +13,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Trigger Render Deploy Hook
+      - name: Deploy to Render
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
