@@ -1,5 +1,6 @@
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
+const limiter = require('hapi-rate-limit');
 const ClientError = require('../../Commons/exceptions/ClientError');
 const DomainErrorTranslator = require('../../Commons/exceptions/DomainErrorTranslator');
 
@@ -32,6 +33,25 @@ const createServer = async (container) => {
       }
     })
   })
+
+  await server.register({
+    plugin: limiter,
+    options: {
+      enabled: false,
+      userLimit: 90,
+      userCache: {
+        expiresIn: 60 * 1000,
+      },
+      pathLimit: false,
+    },
+  });
+
+  server.ext('onRequest', (request, h) => {
+    if (!request.path.startsWith('/threads')) {
+      request.plugins['hapi-rate-limit'] = { skip: true };
+    }
+    return h.continue;
+  });
 
   await server.register([
     {
