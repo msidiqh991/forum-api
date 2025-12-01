@@ -33,6 +33,16 @@ exports.up = pgm => {
             notNull: true,
             default: false,
         },
+        like_count: {
+            type: 'INTEGER',
+            notNull: true,
+            default: 0,
+        },
+        liked_by: {
+            type: 'TEXT[]',
+            notNull: true,
+            default: pgm.func('ARRAY[]::TEXT[]'),
+        },
     })
 };
 
