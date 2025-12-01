@@ -1,11 +1,13 @@
 const AddCommentUseCase = require("../../../../Applications/use_case/AddCommentUseCase");
 const DeleteCommentUseCase = require("../../../../Applications/use_case/DeleteCommentUseCase");
+const ToggleLikeCommentUseCase = require("../../../../Applications/use_case/ToggleLikeCommentUseCase");
 
 class CommentsHandler {
   constructor(container) {
     this._container = container;
     this.postCommentHandler = this.postCommentHandler.bind(this);
     this.deleteCommentHandler = this.deleteCommentHandler.bind(this);
+    this.putLikeCommentHandler = this.putLikeCommentHandler.bind(this);
   }
 
   async postCommentHandler(request, h) {
@@ -44,6 +46,24 @@ class CommentsHandler {
     const response = h.response({
       status: "success",
       message: "Komentar berhasil dihapus",
+    });
+
+    response.code(200);
+    return response;
+  }
+
+  async putLikeCommentHandler(request, h) {
+    const toggleLikeCommentUseCase = this._container.getInstance(
+      ToggleLikeCommentUseCase.name
+    );
+    const { id: owner } = request.auth.credentials;
+    const { threadId, commentId } = request.params;
+
+    await toggleLikeCommentUseCase.execute({ threadId, commentId, owner });
+
+    const response = h.response({
+      status: "success",
+      message: "Like komentar berhasil diubah",
     });
 
     response.code(200);

@@ -18,6 +18,13 @@ describe("Comments Handler", () => {
       fullname: "Dicoding Indonesia",
     });
 
+    await UsersTableTestHelper.addUser({
+      id: "user-456",
+      username: "johndoe",
+      password: "secret",
+      fullname: "John Doe",
+    });
+
     const jwtTokenManager = new JwtTokenManager(Jwt.token);
     accessToken = await jwtTokenManager.createAccessToken({ id: "user-123" });
   });
@@ -32,6 +39,7 @@ describe("Comments Handler", () => {
   });
 
   afterEach(async () => {
+    await CommentTableTestHelper.cleanTable();
     await ThreadTableTestHelper.cleanTable();
   });
 
@@ -118,6 +126,115 @@ describe("Comments Handler", () => {
     });
 
     // Assert
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(200);
+    expect(responseJson.status).toEqual("success");
+  });
+
+  it("should response 404 when like with invalid thread id", async () => {
+    const server = await createServer(container);
+
+    const response = await server.inject({
+      method: "PUT",
+      url: "/threads/thread-xxx/comments/comment-123/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(404);
+    expect(responseJson.status).toEqual("fail");
+  });
+
+  it("should response 404 when like with invalid comment id", async () => {
+    const server = await createServer(container);
+
+    const response = await server.inject({
+      method: "PUT",
+      url: "/threads/thread-123/comments/comment-xxx/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(404);
+    expect(responseJson.status).toEqual("fail");
+  });
+
+  it("should response 200 when user likes another user's comment", async () => {
+    const server = await createServer(container);
+
+    await CommentTableTestHelper.addComment({
+      id: "comment-123",
+      content: "comment from johndoe",
+      threadId: "thread-123",
+      owner: "user-456",
+    });
+
+    const response = await server.inject({
+      method: "PUT",
+      url: "/threads/thread-123/comments/comment-123/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`, 
+      },
+    });
+
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(200);
+    expect(responseJson.status).toEqual("success");
+  });
+
+  it("should response 200 when user likes their own comment", async () => {
+    const server = await createServer(container);
+
+    await CommentTableTestHelper.addComment({
+      id: "comment-123",
+      content: "comment from dicoding",
+      threadId: "thread-123",
+      owner: "user-123",
+    });
+
+    const response = await server.inject({
+      method: "PUT",
+      url: "/threads/thread-123/comments/comment-123/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const responseJson = JSON.parse(response.payload);
+    expect(response.statusCode).toEqual(200);
+    expect(responseJson.status).toEqual("success");
+  });
+
+  it("should response 200 when dicoding unlikes his own comment", async () => {
+    const server = await createServer(container);
+
+    await CommentTableTestHelper.addComment({
+      id: "comment-123",
+      content: "comment from dicoding",
+      threadId: "thread-123",
+      owner: "user-123",
+    });
+
+    await server.inject({
+      method: "PUT",
+      url: "/threads/thread-123/comments/comment-123/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const response = await server.inject({
+      method: "PUT",
+      url: "/threads/thread-123/comments/comment-123/likes",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
     const responseJson = JSON.parse(response.payload);
     expect(response.statusCode).toEqual(200);
     expect(responseJson.status).toEqual("success");
