@@ -19,12 +19,6 @@ const createServer = async (container) => {
   const limiter = new RateLimiter();
   server.ext('onPreAuth', limiter.middleware());
 
-  const cleanupInterval = setInterval(() => limiter.cleanup(), 5 * 60 * 1000);
-
-  server.ext('onPostStop', () => {
-    clearInterval(cleanupInterval);
-  });
-
   await server.register(Jwt);
 
   server.auth.strategy('forumapi_jwt', 'jwt', {
