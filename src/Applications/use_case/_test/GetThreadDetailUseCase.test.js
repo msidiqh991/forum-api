@@ -24,6 +24,7 @@ describe("GetThreadDetailUseCase", () => {
         date: "2021-08-08T07:22:33.555Z",
         content: "sebuah komentar",
         is_deleted: false,
+        like_count: 2,
       },
       {
         id: "comment-999",
@@ -31,6 +32,7 @@ describe("GetThreadDetailUseCase", () => {
         date: "2021-08-08T07:25:00.000Z",
         content: "komentar dihapus",
         is_deleted: true,
+        like_count: 5,
       },
     ];
 
@@ -91,6 +93,7 @@ describe("GetThreadDetailUseCase", () => {
             username: "dicoding",
             date: "2021-08-08T07:22:33.555Z",
             content: "sebuah komentar",
+            likeCount: 2,
             replies: [
               {
                 id: "reply-123",
@@ -105,6 +108,7 @@ describe("GetThreadDetailUseCase", () => {
             username: "userX",
             date: "2021-08-08T07:25:00.000Z",
             content: "**komentar telah dihapus**",
+            likeCount: 5,
             replies: [
               {
                 id: "reply-999",

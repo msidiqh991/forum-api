@@ -19,6 +19,7 @@ class GetThreadDetailUseCase {
             username: comment.username,
             date: comment.date,
             content: comment.is_deleted ? "**komentar telah dihapus**" : comment.content,
+            likeCount: comment.like_count,
             replies: replies
                 .filter(reply => reply.comment_id === comment.id)
                 .map(reply => ({
