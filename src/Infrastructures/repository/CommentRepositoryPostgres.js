@@ -73,7 +73,7 @@ class CommentRepositoryPostgres extends CommentRepository {
 
   async getCommentsByThreadId(threadId) {
     const query = {
-      text: `SELECT c.id, c.content, c.date, c.is_deleted, c.owner, u.username
+      text: `SELECT c.id, c.content, c.date, c.is_deleted, c.like_count, u.username
            FROM comments c
            JOIN users u ON c.owner = u.id
            WHERE c.thread_id = $1
@@ -83,6 +83,52 @@ class CommentRepositoryPostgres extends CommentRepository {
 
     const result = await this._pool.query(query);
     return result.rows;
+  }
+
+  async hasUserLikedComment(commentId, userId) {
+    const query = {
+      text: `SELECT 1 FROM comments 
+            WHERE id = $1 
+            AND $2 = ANY (liked_by)`,
+      values: [commentId, userId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rowCount > 0;
+  }
+
+  async likeComment(commentId, userId) {
+    const query = {
+      text: `UPDATE comments 
+            SET like_count = like_count + 1, 
+            liked_by = array_append(liked_by, $2) 
+            WHERE id = $1`,
+      values: [commentId, userId],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async unlikeComment(commentId, userId) {
+    const query = {
+      text: `UPDATE comments 
+            SET like_count = like_count - 1, 
+            liked_by = array_remove(liked_by, $2) 
+            WHERE id = $1`,
+      values: [commentId, userId],
+    };
+
+    await this._pool.query(query);
+  }
+
+  async getLikeCountByCommentId(commentId) {
+    const query = {
+      text: `SELECT like_count FROM comments WHERE id = $1`,
+      values: [commentId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows[0].like_count;
   }
 }
 

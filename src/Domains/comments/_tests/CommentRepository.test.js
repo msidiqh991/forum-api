@@ -14,5 +14,13 @@ describe('CommentRepository Interface', () => {
             .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
         await expect(commentRepository.getCommentsByThreadId(''))
             .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+        await expect(commentRepository.hasUserLikedComment('', ''))
+            .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+        await expect(commentRepository.likeComment('', ''))
+            .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+        await expect(commentRepository.unlikeComment('', ''))
+            .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
+        await expect(commentRepository.getLikeCountByCommentId(''))
+            .rejects.toThrowError('COMMENT_REPOSITORY.METHOD_NOT_IMPLEMENTED');
     })
 })

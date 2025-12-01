@@ -210,6 +210,8 @@ describe("CommentRepositoryPostgres", () => {
         owner: 'user-123',
         username: 'dicoding',
         date: '2024-01-01T00:00:00.000Z',
+        like_count: 2,
+        is_deleted: false,
       });
       await CommentTableTestHelper.addComment({
         id: 'comment-124',
@@ -218,6 +220,8 @@ describe("CommentRepositoryPostgres", () => {
         owner: 'user-123',
         username: 'dicoding',
         date: '2024-01-02T00:00:00.000Z',
+        like_count: 10,
+        is_deleted: false,
       });
 
       // Action
@@ -229,7 +233,7 @@ describe("CommentRepositoryPostgres", () => {
         {
           id: 'comment-123',
           content: 'This is a comment',
-          owner: 'user-123',
+          like_count: 2,
           username: 'dicoding',
           date: '2024-01-01T00:00:00.000Z',
           is_deleted: false,
@@ -237,7 +241,7 @@ describe("CommentRepositoryPostgres", () => {
         {
           id: 'comment-124',
           content: 'This is another comment',
-          owner: 'user-123',
+          like_count: 10,
           username: 'dicoding',
           date: '2024-01-02T00:00:00.000Z',
           is_deleted: false,
