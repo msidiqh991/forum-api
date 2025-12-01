@@ -9,10 +9,30 @@ const CommentTableTestHelper = {
     owner = "user-123",
     date = new Date().toISOString(),
     is_deleted = false,
+    like_count = 0,
+    liked_by = [],
   }) {
     const query = {
-      text: "INSERT INTO comments (id, content, owner, thread_id, date, is_deleted) VALUES($1, $2, $3, $4, $5, $6) RETURNING id, content, owner",
-      values: [id, content, owner, threadId, date, is_deleted],
+      text: `INSERT INTO comments (
+            id, 
+            content, 
+            owner,
+            thread_id, 
+            date, 
+            is_deleted, 
+            like_count, 
+            liked_by
+          ) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, content, owner`,
+      values: [
+        id,
+        content,
+        owner,
+        threadId,
+        date,
+        is_deleted,
+        like_count,
+        liked_by,
+      ],
     };
 
     await pool.query(query);
