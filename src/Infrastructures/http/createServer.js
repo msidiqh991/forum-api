@@ -1,6 +1,6 @@
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
-const limiter = require('hapi-rate-limit');
+const RateLimiter = require('./RateLimiter');
 const ClientError = require('../../Commons/exceptions/ClientError');
 const DomainErrorTranslator = require('../../Commons/exceptions/DomainErrorTranslator');
 
@@ -14,6 +14,15 @@ const createServer = async (container) => {
   const server = Hapi.server({
     host: process.env.HOST,
     port: process.env.PORT,
+  });
+
+  const limiter = new RateLimiter();
+  server.ext('onPreAuth', limiter.middleware());
+
+  const cleanupInterval = setInterval(() => limiter.cleanup(), 5 * 60 * 1000);
+
+  server.ext('onPostStop', () => {
+    clearInterval(cleanupInterval);
   });
 
   await server.register(Jwt);
@@ -33,25 +42,6 @@ const createServer = async (container) => {
       }
     })
   })
-
-  await server.register({
-    plugin: limiter,
-    options: {
-      enabled: false,
-      userLimit: 90,
-      userCache: {
-        expiresIn: 60 * 1000,
-      },
-      pathLimit: false,
-    },
-  });
-
-  server.ext('onRequest', (request, h) => {
-    if (!request.path.startsWith('/threads')) {
-      request.plugins['hapi-rate-limit'] = { skip: true };
-    }
-    return h.continue;
-  });
 
   await server.register([
     {
@@ -107,6 +97,7 @@ const createServer = async (container) => {
         status: 'error',
         message: 'terjadi kegagalan pada server kami',
       });
+      
       newResponse.code(500);
       return newResponse;
     }
