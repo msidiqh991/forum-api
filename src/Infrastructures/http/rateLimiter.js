@@ -3,10 +3,16 @@ class RateLimiter {
     this.requests = new Map();
     this.limit = 90; 
     this.windowMs = 60000; 
+    this.minInterval = Math.floor(this.windowMs / this.limit); 
+    this.enabled = process.env.NODE_ENV !== 'test'; 
   }
 
   middleware() {
     return (request, h) => {
+      if (!this.enabled) {
+        return h.continue;
+      }
+
       const ip = request.info.remoteAddress;
       const now = Date.now();
       
@@ -29,6 +35,20 @@ class RateLimiter {
         });
         response.code(429);
         return response.takeover();
+      }
+
+      if (validRequests.length > 0) {
+        const lastRequestTime = validRequests[validRequests.length - 1];
+        const timeSinceLastRequest = now - lastRequestTime;
+        
+        if (timeSinceLastRequest < this.minInterval) {
+          const response = h.response({
+            status: 'fail',
+            message: 'Too many requests, please try again later.',
+          });
+          response.code(429);
+          return response.takeover();
+        }
       }
 
       validRequests.push(now);
