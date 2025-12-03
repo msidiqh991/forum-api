@@ -249,4 +249,59 @@ describe("CommentRepositoryPostgres", () => {
       ]);
     })
   })
+
+  describe("Like and Unlike comment functions", () => {
+    it('should get like count by comment id correctly', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      await CommentTableTestHelper.addComment({
+        id: 'comment-123',
+        content: 'This is a comment',
+        threadId: 'thread-123',
+        owner: 'user-123',
+        username: 'dicoding',
+        date: '2024-01-01T00:00:00.000Z',
+        like_count: 5,
+        is_deleted: false,
+      });
+
+      // Action
+      const likeCount = await commentRepositoryPostgres.getLikeCountByCommentId('comment-123');
+
+      // Assert
+      expect(likeCount).toBe(5);
+      expect(typeof likeCount).toBe('number');
+    })
+
+    it('should like and unlike comment correctly', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+      await CommentTableTestHelper.addComment({
+        id: 'comment-123',
+        content: 'This is a comment',
+        threadId: 'thread-123',
+        owner: 'user-123',
+        username: 'dicoding',
+        date: '2024-01-01T00:00:00.000Z',
+        like_count: 0,
+        is_deleted: false,
+      });
+
+      // Action
+      await commentRepositoryPostgres.likeComment('comment-123', 'user-123');
+      let hasLiked = await commentRepositoryPostgres.hasUserLikedComment('comment-123', 'user-123');
+
+      // Assert
+      expect(hasLiked).toBe(true);
+      expect(typeof hasLiked).toBe('boolean');
+
+      // Action
+      await commentRepositoryPostgres.unlikeComment('comment-123', 'user-123');
+      hasLiked = await commentRepositoryPostgres.hasUserLikedComment('comment-123', 'user-123');
+
+      // Assert
+      expect(hasLiked).toBe(false);
+      expect(typeof hasLiked).toBe('boolean');
+    })
+  })
 });
